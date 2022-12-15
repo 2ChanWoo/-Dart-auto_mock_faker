@@ -6,6 +6,49 @@ import '../app/config.dart';
 import '../data/model.dart';
 import '../data/types.dart';
 
+Future<List<String>> extractClassNames() async {
+  String path = CliConfig.parseDirName;
+  if (path.isEmpty) {
+    print('입력된 디렉토리가 없습니다. 현재 디텍토리에서 클래스를 찾아 파싱합니다.'); //TODO: 입력 받아서 진행될 수 있도록.
+    path = p.current;
+  }
+
+  final dir = Directory(path);
+  final List<FileSystemEntity> entities = dir.listSync().toList();
+  final List<File> dartFiles =
+      entities.whereType<File>().toList().where((e) => (e.path.endsWith(".dart"))).toList();
+
+  print("-------------------------------------");
+  List<String> classNames = [];
+
+  for (var file in dartFiles) {
+    String content = File(file.path).readAsStringSync();  //TODO: 파일선택
+    List<String> classes = content.split('class ');
+
+    // 종속코드(import) 또는 빈 문자열('') 이 있으므로 제거.
+    // if(classes.first.isEmpty) {
+    classes.removeAt(0);
+    // }
+
+    for(int i=0; i<classes.length; i++) {
+      if(classes[i].isEmpty) continue;
+
+      String str = classes[i];
+      String containClassNameString = str.split('{').first;
+      print(containClassNameString);
+      String className = containClassNameString.trim().split(' ').first;  // 앞 뒤 공백 제거 후, 가장 앞에 있을 클래스 네임 추출.
+      print(className);
+      classNames.add(className);
+
+      // for(int s=1; s<=lines.length; s++) {
+      //   print("$s: ${lines[s-1]}");
+      // }
+
+    }
+  }
+  print(classNames);
+  return classNames;
+}
 
 void classParser() async {
   String path = CliConfig.parseDirName;

@@ -61,6 +61,7 @@ class AMFCommandRunner extends CommandRunner<int> {
 
   /// executes the logic for 'amf run'
   Future<void> startRun() async {
-    classParser();
+    //classParser();
+    extractClassNames();
   }
 }
