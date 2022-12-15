@@ -1,15 +1,17 @@
-class YamlClassModel {
+class ClassModel {
   final String name;
+  final String content;
   final bool? isIterable;
   final int? length;
   final List<dynamic>? range;
   final List<Properties> properties;
 
-  YamlClassModel({required this.name, this.isIterable, this.length, this.range, required this.properties});
+  ClassModel({required this.name, required this.content, this.isIterable, this.length, this.range, required this.properties});
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
     data['name'] = name;
+    data['content'] = content;
     data['iterable'] = isIterable;
     data['length'] = length;
     data['range'] = range;

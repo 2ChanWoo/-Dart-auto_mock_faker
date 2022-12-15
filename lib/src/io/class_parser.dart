@@ -6,8 +6,7 @@ import '../app/config.dart';
 import '../data/model.dart';
 import '../data/types.dart';
 
-Future<List<String>> extractClassNames() async {
-  String path = CliConfig.parseDirName;
+Future<List<File>> getDartFiles(String path) async {
   if (path.isEmpty) {
     print('입력된 디렉토리가 없습니다. 현재 디텍토리에서 클래스를 찾아 파싱합니다.'); //TODO: 입력 받아서 진행될 수 있도록.
     path = p.current;
@@ -16,41 +15,74 @@ Future<List<String>> extractClassNames() async {
   final dir = Directory(path);
   final List<FileSystemEntity> entities = dir.listSync().toList();
   final List<File> dartFiles =
-      entities.whereType<File>().toList().where((e) => (e.path.endsWith(".dart"))).toList();
+  entities.whereType<File>().toList().where((e) => (e.path.endsWith(".dart"))).toList();
 
+  return dartFiles;
+}
+
+List<String> extractClassNames(String content) {
   print("-------------------------------------");
   List<String> classNames = [];
 
-  for (var file in dartFiles) {
-    String content = File(file.path).readAsStringSync();  //TODO: 파일선택
-    List<String> classes = content.split('class ');
+  List<String> classes = content.split('class ');
 
-    // 종속코드(import) 또는 빈 문자열('') 이 있으므로 제거.
-    // if(classes.first.isEmpty) {
-    classes.removeAt(0);
+  // 종속코드(import) 또는 빈 문자열('') 이 있으므로 제거.
+  // if(classes.first.isEmpty) {
+  classes.removeAt(0);
+  // }
+
+  for (int i = 0; i < classes.length; i++) {
+    if (classes[i].isEmpty) continue;
+
+    String str = classes[i];
+    String containClassNameString = str.split('{').first;
+    print(containClassNameString);
+    String className =
+        containClassNameString.trim().split(' ').first; // 앞 뒤 공백 제거 후, 가장 앞에 있을 클래스 네임 추출.
+    print(className);
+    classNames.add(className);
+
+    // for(int s=1; s<=lines.length; s++) {
+    //   print("$s: ${lines[s-1]}");
     // }
 
-    for(int i=0; i<classes.length; i++) {
-      if(classes[i].isEmpty) continue;
-
-      String str = classes[i];
-      String containClassNameString = str.split('{').first;
-      print(containClassNameString);
-      String className = containClassNameString.trim().split(' ').first;  // 앞 뒤 공백 제거 후, 가장 앞에 있을 클래스 네임 추출.
-      print(className);
-      classNames.add(className);
-
-      // for(int s=1; s<=lines.length; s++) {
-      //   print("$s: ${lines[s-1]}");
-      // }
-
-    }
   }
+
   print(classNames);
   return classNames;
 }
 
-void classParser() async {
+String extractClassContent({required String className, required String content}) {
+  int classStartIndex = content.indexOf(className);
+  int classScopeStartIndex = content.indexOf('{', classStartIndex);
+  print(classScopeStartIndex);
+  List<String> contentCharSet = content.split('');
+
+  int bracketStartIndex = classScopeStartIndex + 1;    // class 시작 브라켓(open bracket) '{' 의 직후 문자
+  int bracketEndIndex = bracketStartIndex;
+  int bracketNum = 1;
+  while(true) {
+    if(content[bracketEndIndex] == '{') {
+      bracketNum++;
+    } else if (content[bracketEndIndex] == '}') {
+      bracketNum--;
+    }
+
+    if(bracketNum == 0) { // class의 scope가 감지되면 탈출.
+      break;
+    }
+    bracketEndIndex++;
+  } //
+  // print(content.substring(bracketEndIndex- 100, bracketEndIndex));
+  // content.runes
+
+  /// 클래스 scope 내에서 파싱작업.
+  String classContent = content.substring(bracketStartIndex, bracketEndIndex);
+
+  return classContent;
+}
+
+void classParser222222() async {
   String path = CliConfig.parseDirName;
   if(path.isEmpty) {
     print('입력된 디렉토리가 없습니다. 현재 디텍토리에서 클래스를 찾아 파싱합니다.');  //TODO: 입력 받아서 진행될 수 있도록.
@@ -91,7 +123,7 @@ void classParser() async {
   }
 
   Map<String, dynamic> yamlConfig = {}; //TODO: 글로벌 변수로? 갖고가서 한 번에 yaml만드는게 나을까?
-  List<YamlClassModel> yamlClassModels = [];
+  List<ClassModel> yamlClassModels = [];
   // 파일의 클래스 갯수만큼 실행.
   for(var className in classNames) {
     int classStartIndex = content.indexOf(className);
@@ -120,6 +152,9 @@ void classParser() async {
 
     /// 클래스 scope 내에서 파싱작업.
     String classContent = content.substring(bracketStartIndex, bracketEndIndex);
+
+    /// ===========================================================================
+
     List<String> contentLineSet = classContent.split('\n'); // 한 줄씩 분석.
     List<Properties> properties = [];
 
@@ -159,7 +194,7 @@ void classParser() async {
         properties.add(Properties(name: e.trim().split(' ').first, type: varType!));
       }
     }
-    yamlClassModels.add(YamlClassModel(name: className, properties: properties));
+    yamlClassModels.add(ClassModel(name: className, properties: properties, content: ''));
   }
   print("----------------------------------");
   print(yamlClassModels.first.toJson());
