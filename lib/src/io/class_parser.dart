@@ -143,6 +143,11 @@ String? getParsableContent({required String str, String className = ''}) {
   return null;
 }
 
+/// Temporary delete code
+bool deleteExceptType_Temp({required String type, required List<String> exceptType}) {
+  for(var t in exceptType) if(type == t) return true;
+  return false;
+}
 
 
 void extractProperties(ClassModel classModel) {
@@ -186,10 +191,15 @@ void extractProperties(ClassModel classModel) {
 
     if(type == null) continue;
 
+    /// Temporary delete code     //TODO: temporary code
+    if(deleteExceptType_Temp(type: type, exceptType: typeMap)) continue;
+    if(deleteExceptType_Temp(type: type, exceptType: typeSet)) continue;
+
+
     /// TODO: <>
-    // if(typeIterable.toString().contains(type)) {
-    //   subType = extractScope(str: l, openScopeChar: '<', closeScopeChar: '>');
-    // }
+    if(typeIterable.toString().contains(type)) {
+      subType = extractScope(str: l, openScopeChar: '<', closeScopeChar: '>');
+    }
     ///
 
 
@@ -205,6 +215,7 @@ void extractProperties(ClassModel classModel) {
       l = l.replaceFirst(keyword, '');
     }
 
+    //TODO: Subtype -
     if(subType != null) {
       l = l.replaceFirst("<$subType>", '');
     }

@@ -10,6 +10,7 @@
 
 List<String> dataKeywords = ['const', 'static', 'final', ':', ';', '?'];
 
+//TODO: 타입이 먼저 나오지 않는 언어일 경우, ex; 변수명이 inter~ 라면 int타입으로 잡힐 수 있음.
 // 대소문자 구분 해야 함.
 const typeString = ['String'];
 const typeInt = ['int', 'number'];
@@ -26,13 +27,11 @@ const typeSet = ['Set'];
 const List<String> typeIterable = [...typeList, ...typeSet, ...typeMap];
 
 const types = [
+  ...typeIterable,
   ...typeString,
   ...typeInt,
   ...typeDouble,
   ...typeBool,
-  ...typeList,
-  ...typeMap,
-  ...typeSet,
   ...typeDynamic,
 ];
 
@@ -43,6 +42,7 @@ const Map<String, List<String>> primitiveTypes = {
   'typeBool': typeBool,
   'typeList': typeList,
   'typeMap': typeMap,
+  'typeSet': typeSet,
 };
 
 /// ex, Person, School 등등..
