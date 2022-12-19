@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:auto_mock_faker/src/data/model.dart';
+import 'package:auto_mock_faker/src/data/types.dart';
 import 'package:io/io.dart';
 
 import 'app/config.dart';
@@ -64,26 +65,34 @@ class AMFCommandRunner extends CommandRunner<int> {
 
   /// executes the logic for 'amf run'
   Future<void> startRun() async {
-    classParser();
+    classParser();  //createHelper
   }
 
   Future classParser() async {
     List<ClassModel> classModels = [];
     List<File> dartFiles = await getDartFiles(CliConfig.parseDirName); //TODO: path, argㄹㅗ 전달 받을 수 있도록.
-    List<String> classContents = [];
     for(var file in dartFiles) {
       String content = File(file.path).readAsStringSync();
       List<String> classNames = [];
       classNames = extractClassNames(content);
 
       for(var name in classNames) {
-        String classContent = extractClassContent(className: name, content: content);
+        int classStartIndex = content.indexOf(name);
+        String classContent = extractScope(str: content, openScopeChar: '{', closeScopeChar: '}', startIndex: classStartIndex);
         classModels.add(ClassModel(name: name, content: classContent, properties: []));
 
-        print("========================================================================================");
-        print("name: $name");
-        print("content: $classContent");
+        //print("Extract class content ... ${++i}/${classNames.length}");
       }
     }
+
+
+    for(var model in classModels) {
+      //print("extract Properties :: ");
+      extractProperties(model);
+    }
+
   }
+
+
+
 }

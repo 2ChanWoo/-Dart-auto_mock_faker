@@ -4,7 +4,7 @@ class ClassModel {
   final bool? isIterable;
   final int? length;
   final List<dynamic>? range;
-  final List<Properties> properties;
+  List<Properties> properties;
 
   ClassModel({required this.name, required this.content, this.isIterable, this.length, this.range, required this.properties});
 
@@ -18,7 +18,7 @@ class ClassModel {
     data['properties'] = properties.map((e) => e.toJson()).toList();
     return data;
   }
-
+//TODO: nullable 옵션?
 }
 
 class Properties {

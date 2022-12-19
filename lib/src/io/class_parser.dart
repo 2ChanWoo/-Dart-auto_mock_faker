@@ -7,7 +7,7 @@ import '../data/model.dart';
 import '../data/types.dart';
 
 Future<List<File>> getDartFiles(String path) async {
-  if (path.isEmpty) {
+  if(path.isEmpty) {
     print('입력된 디렉토리가 없습니다. 현재 디텍토리에서 클래스를 찾아 파싱합니다.'); //TODO: 입력 받아서 진행될 수 있도록.
     path = p.current;
   }
@@ -19,6 +19,17 @@ Future<List<File>> getDartFiles(String path) async {
 
   return dartFiles;
 }
+
+/// 반드시 extractScope 로 class scope 추출한 것을 content으로 넘겨줄 것.
+// String removeFuncScope({required String className, required String content}) {
+//   List<String> contentLineSet = content.split('\n');
+//
+//   이건 힘들다....
+//   생성자
+//   이름생성자
+//   팩토리 등등 구분을...
+// } 아래처럼!!
+
 
 List<String> extractClassNames(String content) {
   print("-------------------------------------");
@@ -36,7 +47,7 @@ List<String> extractClassNames(String content) {
 
     String str = classes[i];
     String containClassNameString = str.split('{').first;
-    print(containClassNameString);
+    //print(containClassNameString);
     String className =
         containClassNameString.trim().split(' ').first; // 앞 뒤 공백 제거 후, 가장 앞에 있을 클래스 네임 추출.
     print(className);
@@ -48,38 +59,162 @@ List<String> extractClassNames(String content) {
 
   }
 
-  print(classNames);
+  print("class names: $classNames");
   return classNames;
 }
 
-String extractClassContent({required String className, required String content}) {
-  int classStartIndex = content.indexOf(className);
-  int classScopeStartIndex = content.indexOf('{', classStartIndex);
-  print(classScopeStartIndex);
-  List<String> contentCharSet = content.split('');
+/// map type은 모델에는 잘 없을 것으로 판단되어 일단 생략.
+void extractIterableType(String str) {
+
+}
+
+String extractScope({
+  required String str,
+  required String openScopeChar,
+  required String closeScopeChar,
+  int startIndex = 0,
+  /// Scope character (ex, '{', '}' ) 를 포함한 String을 return할 것 인지.
+  bool returnScopeChar = false,
+}) {
+  int classScopeStartIndex = str.indexOf(openScopeChar, startIndex);
+  // List<String> contentCharSet = str.split('');
 
   int bracketStartIndex = classScopeStartIndex + 1;    // class 시작 브라켓(open bracket) '{' 의 직후 문자
   int bracketEndIndex = bracketStartIndex;
   int bracketNum = 1;
   while(true) {
-    if(content[bracketEndIndex] == '{') {
+    //safe
+    if(bracketNum > 10 || bracketNum < -10 || bracketEndIndex > str.length) {
+      Exception("Can not found scope.. sorry");
+      exit(0);
+    }
+
+    if(str[bracketEndIndex] == openScopeChar) {
       bracketNum++;
-    } else if (content[bracketEndIndex] == '}') {
+    } else if (str[bracketEndIndex] == closeScopeChar) {
       bracketNum--;
     }
 
     if(bracketNum == 0) { // class의 scope가 감지되면 탈출.
       break;
     }
+
+
     bracketEndIndex++;
   } //
-  // print(content.substring(bracketEndIndex- 100, bracketEndIndex));
   // content.runes
 
-  /// 클래스 scope 내에서 파싱작업.
-  String classContent = content.substring(bracketStartIndex, bracketEndIndex);
+  if(returnScopeChar) {
+    bracketStartIndex--;
+    bracketEndIndex++;
+  }
 
-  return classContent;
+  /// 클래스 scope 내에서 파싱작업.
+  String scope = str.substring(bracketStartIndex, bracketEndIndex);
+
+  return scope;
+}
+
+/// 클래스 이름을 포함하지 않고, 타입이 존재하며, 마지막이 세미콜론(;) 으로 끝나는 라인판 가져옴.
+///
+/// getter, setter 는 모델에 잘 없을 것으로 판단되어 일단 생략.
+String? getParsableContent({required String str, String className = ''}) {
+  String? result;
+
+  bool hasType = false;
+  bool hasClassName = false;
+  bool hasSemicolon = false;
+  /// => true, false, true 이어야 parsable.
+
+  for(var t in types) {
+    if(str.contains(t)) {
+      result = t;
+      hasType = true;
+      break;
+    }
+  }
+
+  if(str.contains(className)) hasClassName = true;
+
+  if(str.endsWith(';')) hasSemicolon = true;
+
+
+  if(hasType && !hasClassName && hasSemicolon) return result;
+  return null;
+}
+
+
+
+void extractProperties(ClassModel classModel) {
+  String content = classModel.content;
+
+  /// remove bracket scope
+  while(true){
+    int scopeIndex = content.indexOf('{');
+    int endIndex = -1;
+    if (scopeIndex != -1) {
+      String scopeStr = extractScope(
+        str: content,
+        openScopeChar: '{',
+        closeScopeChar: '}',
+        returnScopeChar: true,
+        startIndex: scopeIndex,
+      );
+      content = content.replaceFirst(scopeStr, '');
+    } else {
+      break;
+    }
+  }
+  /// 중첩되어 있을 경우 {{}} 동작오류.
+  // using chatGTP
+  //
+  // remove between '{' and '}' and '(' and ')'
+  //content = content.replaceAll(RegExp(r'{[^}]*}|\([^)]*\)'), '');
+
+  List<String> contentLineSet = content.split('\n');
+
+  for(var l in contentLineSet) {
+    bool isVar = false;
+    String? varType;
+    String? varName;
+    bool isNullable = false;
+    String? subType;
+
+    l = l.split('//').first; // delete comment
+
+    String? type = getParsableContent(str: l, className: classModel.name);
+
+    if(type == null) continue;
+
+    /// TODO: <>
+    // if(typeIterable.toString().contains(type)) {
+    //   subType = extractScope(str: l, openScopeChar: '<', closeScopeChar: '>');
+    // }
+    ///
+
+
+
+    l = l.replaceFirst(type, '');
+
+    if(l.contains('?')) {
+      isNullable = true;
+      l = l.replaceFirst('?', '');
+    }
+
+    for(var keyword in dataKeywords) {
+      l = l.replaceFirst(keyword, '');
+    }
+
+    if(subType != null) {
+      l = l.replaceFirst("<$subType>", '');
+    }
+
+    l = l.trim().split(' ').first;
+    print("[${classModel.name}]>> $l");
+
+    classModel.properties.add(Properties(name: l, type: type));
+
+  }
 }
 
 void classParser222222() async {
@@ -182,7 +317,6 @@ void classParser222222() async {
         // 이제 이걸로 yaml을 생성하는게..
       }
 
-      List<String> dataKeywords = ['const', 'static', 'final', ':', ';', '?'];  //TODO: global
       for(var re in dataKeywords) {
         e = e.replaceFirst(re, ''); //
       }
