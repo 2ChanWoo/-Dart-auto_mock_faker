@@ -230,6 +230,9 @@ void extractProperties(ClassModel classModel) {
       l = l.replaceFirst("<$subType>", '');
     }
 
+    // TODO: temp. 복잡한 구조를 가지면 패스..
+    if(l.trim().split(' ').length > 2) continue;
+
     l = l.trim().split(' ').first;
     // print("[${classModel.name}]>> $l");
 
