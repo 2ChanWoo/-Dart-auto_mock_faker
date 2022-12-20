@@ -77,8 +77,13 @@ class AMFCommandRunner extends CommandRunner<int> {
       classNames = extractClassNames(content);
 
       for(var name in classNames) {
-        int classStartIndex = content.indexOf(name);
-        String classContent = extractScope(str: content, openScopeChar: '{', closeScopeChar: '}', startIndex: classStartIndex);
+        int classStartIndex = content.indexOf(CliConfig.classPrefix+name);
+        String classContent = extractScope(
+          str: content,
+          openScopeChar: '{',
+          closeScopeChar: '}',
+          startIndex: classStartIndex,
+        );
         classModels.add(ClassModel(name: name, content: classContent, properties: []));
 
         //print("Extract class content ... ${++i}/${classNames.length}");

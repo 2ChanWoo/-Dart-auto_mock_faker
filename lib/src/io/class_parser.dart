@@ -35,7 +35,7 @@ List<String> extractClassNames(String content) {
   print("-------------------------------------");
   List<String> classNames = [];
 
-  List<String> classes = content.split('class ');
+  List<String> classes = content.split(CliConfig.classPrefix);
 
   // 종속코드(import) 또는 빈 문자열('') 이 있으므로 제거.
   // if(classes.first.isEmpty) {
@@ -50,7 +50,6 @@ List<String> extractClassNames(String content) {
     //print(containClassNameString);
     String className =
         containClassNameString.trim().split(' ').first; // 앞 뒤 공백 제거 후, 가장 앞에 있을 클래스 네임 추출.
-    print(className);
     classNames.add(className);
 
     // for(int s=1; s<=lines.length; s++) {
@@ -68,6 +67,17 @@ void extractIterableType(String str) {
 
 }
 
+
+/** //write by chatGPT
+ * void main() {
+    String input = "H{delete{remove}delete2}ELL{제거}O";
+    String output =
+    input.replaceAllMapped(RegExp(r"{[^{}]*}|\{[^{}]*(?=\{)|(?<=\})[^{}]*\}"), (match) {
+    return "";
+    });
+    print(output); // Output: "HELLO"
+    }
+ * */
 String extractScope({
   required String str,
   required String openScopeChar,
@@ -76,12 +86,13 @@ String extractScope({
   /// Scope character (ex, '{', '}' ) 를 포함한 String을 return할 것 인지.
   bool returnScopeChar = false,
 }) {
-  int classScopeStartIndex = str.indexOf(openScopeChar, startIndex);
+  int scopeStartIndex = str.indexOf(openScopeChar, startIndex);
   // List<String> contentCharSet = str.split('');
 
-  int bracketStartIndex = classScopeStartIndex + 1;    // class 시작 브라켓(open bracket) '{' 의 직후 문자
+  int bracketStartIndex = scopeStartIndex + 1;    // class 시작 브라켓(open bracket) '{' 의 직후 문자
   int bracketEndIndex = bracketStartIndex;
   int bracketNum = 1;
+
   while(true) {
     //safe
     if(bracketNum > 10 || bracketNum < -10 || bracketEndIndex > str.length) {
@@ -111,7 +122,6 @@ String extractScope({
 
   /// 클래스 scope 내에서 파싱작업.
   String scope = str.substring(bracketStartIndex, bracketEndIndex);
-
   return scope;
 }
 
@@ -221,7 +231,7 @@ void extractProperties(ClassModel classModel) {
     }
 
     l = l.trim().split(' ').first;
-    print("[${classModel.name}]>> $l");
+    // print("[${classModel.name}]>> $l");
 
     classModel.properties.add(Properties(name: l, type: type));
 
