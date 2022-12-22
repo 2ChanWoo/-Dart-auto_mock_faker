@@ -8,7 +8,7 @@
 // }
 /// => enum member 이름으로 int 사용불가.
 
-List<String> dataKeywords = ['const', 'static', 'final', ':', ';', '?'];
+List<String> dataKeywords = ['const', 'static', 'final', 'late', ':', ';', '?'];
 
 //TODO: 타입이 먼저 나오지 않는 언어일 경우, ex; 변수명이 inter~ 라면 int타입으로 잡힐 수 있음.
 // 대소문자 구분 해야 함.

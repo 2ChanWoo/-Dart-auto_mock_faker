@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:auto_mock_faker/src/data/model.dart';
-import 'package:auto_mock_faker/src/data/types.dart';
 import 'package:io/io.dart';
 
 import 'app/config.dart';
@@ -89,13 +88,29 @@ class AMFCommandRunner extends CommandRunner<int> {
         //print("Extract class content ... ${++i}/${classNames.length}");
       }
     }
-
+//
+// print('{');
+//     for(var model in classModels) {
+//       //print("extract Properties :: ");
+//       extractProperties(model);
+//       print("${model.toJson()['name']}: ${model.toJson()['properties']},");
+//     }
+//     print('}');
 
     for(var model in classModels) {
-      //print("extract Properties :: ");
       extractProperties(model);
+        print("--------------------------${model.name}\n");
+        print("""${model.name} get${model.name}() {
+          return ${model.name}(""");
+      for(var p in model.properties) {
+        print("${p.name}: ,");
+      }
+      print("""
+      );
+      }
+      """);
+      print("\n\n\n");
     }
-
   }
 
 

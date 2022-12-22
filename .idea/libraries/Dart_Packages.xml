@@ -142,6 +142,13 @@
             </list>
           </value>
         </entry>
+        <entry key="faker">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/faker-2.1.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="ffi">
           <value>
             <list>
@@ -571,6 +578,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/dcli-1.31.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/dcli_core-1.34.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/equatable-2.0.5/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/faker-2.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/ffi-1.2.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/file-6.1.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/file_utils-1.0.1/lib" />

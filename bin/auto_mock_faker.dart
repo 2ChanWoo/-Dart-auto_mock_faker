@@ -6,6 +6,8 @@ import 'package:path/path.dart' as p;
 
 const lineNumber = 'line-number';
 
+/// dart run {~}/auto_mock_faker/bin/auto_mock_faker.dart run
+
 void main(List<String> arguments) async {
   exitCode = 0; // presume success
   final parser = ArgParser()
